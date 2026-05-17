@@ -1,8 +1,10 @@
 import argparse
 import torch
 from pathlib import Path
+import torch.optim as optim
 from utils.utils import *
 from torch.utils.data import DataLoader
+from utils.models import *
 
 
 def parse_arguments():
@@ -30,7 +32,7 @@ def parse_arguments():
     parser.add_argument(
         '--vgg',
         type=str,
-        default=r'C:\Users\Admin\Desktop\ai\major_projects\NeuroCanvas\vgg_normalized.pth',
+        default=r'C:\Users\Admin\Desktop\ai\major_projects\NeuroCanvas\vgg_normalised.pth',
         help='Location of pre-trained VGG'
     )
 
@@ -64,6 +66,11 @@ def parse_arguments():
         default=True,
         help='Crop Image'
     )
+
+    parser.add_argument('--lr', type=float, default=1e-4,
+                        help='Learning rate')
+    parser.add_argument('--lr_decay', type=float, default=5e-5,
+                        help='Learning rate decay')
 
 
 
@@ -104,7 +111,19 @@ def main():
                                   pin_memory=torch.cuda.is_available(),
                                   drop_last=True)
     
-    
+    print('Number of batches in content dataset: ', len(content_dataloader))
+    print('Number of batches in style dataset: ', len(style_dataloader))
+
+    encoder= VGGEncoder(args.vgg).to(device)
+    decoder=Decoder().to(device)
+
+    optimizer=optim.Adam(decoder.parameters(),lr=args.lr)
+    scheduler=optim.lr_scheduler.LambdaLR(
+        optimizer,
+        lr_lambda=lambda epoch: 1.0/(1.0+args.lr_decay*epoch)
+    )
+
+    print('Training...')
 
 
 if __name__ == '__main__':
