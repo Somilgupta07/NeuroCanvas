@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeuroCanvas — Neural Style Transfer</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-name">Neuro<em>Canvas</em></div>
+        <div class="brand-tag">AdaIN</div>
+      </div>
+
+      <div class="header-info">
+        <span><span class="status-dot"></span>Model Ready</span>
+        <span>Neural Style Transfer</span>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-grid"></div>
+
+      <div class="hero-content">
+        <div class="hero-label">Adaptive Instance Normalization</div>
+
+        <h2>
+          Transfer <em>artistic style</em><br />
+          to any photograph
+        </h2>
+
+        <p>
+          Upload a content photo and a style painting. The model transfers the
+          artistic texture, color, and brushstroke patterns in seconds.
+        </p>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <div class="app-layout">
+      <!-- LEFT -->
+      <div class="panel-left">
+        <div>
+          <div class="sec-label">
+            <span class="sec-label-num">01</span> Upload Images
+          </div>
+
+          <div class="upload-pair">
+            <!-- Content -->
+            <div class="drop-zone" id="contentZone">
+              <div class="zone-badge content">Content</div>
+
+              <input
+                type="file"
+                id="contentInput"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+              />
+
+              <div class="drop-preview" id="contentPreview"></div>
+
+              <div class="drop-ui">
+                <div class="drop-icon content-icon">⊕</div>
+                <div class="drop-label content-label">Photo</div>
+                <div class="drop-sub">Click or drag</div>
+              </div>
+            </div>
+
+            <!-- Style -->
+            <div class="drop-zone" id="styleZone">
+              <div class="zone-badge style">Style</div>
+
+              <input
+                type="file"
+                id="styleInput"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+              />
+
+              <div class="drop-preview" id="stylePreview"></div>
+
+              <div class="drop-ui">
+                <div class="drop-icon style-icon">⊕</div>
+                <div class="drop-label style-label">Painting</div>
+                <div class="drop-sub">Click or drag</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div>
+          <div class="sec-label">
+            <span class="sec-label-num">02</span> Parameters
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1.4rem">
+            <div class="control-row">
+              <div class="control-label">
+                Style Strength (α)
+
+                <span class="control-value" id="alphaVal"> 1.00 </span>
+              </div>
+
+              <input
+                type="range"
+                id="alphaSlider"
+                min="0"
+                max="1"
+                step="0.05"
+                value="1.0"
+              />
+
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  font-size: 0.5rem;
+                  color: var(--text3);
+                  margin-top: 0.3rem;
+                "
+              >
+                <span>Content only</span>
+                <span>Full style</span>
+              </div>
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">Output Resolution</div>
+
+              <div class="select-wrapper">
+                <select id="sizeSelect">
+                  <option value="256">256 × 256 — Fast</option>
+
+                  <option value="512" selected>512 × 512 — Recommended</option>
+
+                  <option value="768">768 × 768 — High Quality</option>
+                </select>
+
+                <div class="select-arrow">▾</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate -->
+        <div>
+          <div class="sec-label">
+            <span class="sec-label-num">03</span> Generate
+          </div>
+
+          <button
+            class="btn-generate"
+            id="generateBtn"
+            onclick="generate()"
+            disabled
+          >
+            <span>◈ &nbsp; Transfer Style</span>
+          </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-track">
+            <div class="progress-fill"></div>
+          </div>
+
+          <div class="progress-steps">
+            <div class="step active" id="step1">
+              <div class="step-dot"></div>
+              Encoding
+            </div>
+
+            <div class="step" id="step2">
+              <div class="step-dot"></div>
+              AdaIN
+            </div>
+
+            <div class="step" id="step3">
+              <div class="step-dot"></div>
+              Decoding
+            </div>
+
+            <div class="step" id="step4">
+              <div class="step-dot"></div>
+              Saving
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="panel-right">
+        <!-- Empty -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">◈</div>
+
+          <h3>Result appears here</h3>
+
+          <p>
+            Upload a content photo and style painting, then click Transfer Style
+          </p>
+        </div>
+
+        <!-- Result -->
+        <div class="result-area" id="resultArea">
+          <div>
+            <div class="sec-label">
+              <span class="sec-label-num">04</span> Output
+            </div>
+
+            <div class="result-frame">
+              <img id="resultImg" src="" alt="Stylized output" />
+
+              <div class="result-corner tl"></div>
+              <div class="result-corner tr"></div>
+              <div class="result-corner bl"></div>
+              <div class="result-corner br"></div>
+            </div>
+
+            <div class="result-meta" style="margin-top: 0.8rem">
+              <span> α = <span id="resultAlpha">1.00</span> </span>
+
+              <span id="resultSize">512 × 512</span>
+
+              <span id="resultTime">—</span>
+            </div>
+          </div>
+
+          <!-- Compare -->
+          <div>
+            <div class="sec-label">Comparison</div>
+
+            <div class="compare-trio">
+              <div class="trio-panel">
+                <img id="cmpContent" src="" alt="Content" />
+                <div class="trio-tag">Content</div>
+              </div>
+
+              <div class="trio-panel">
+                <img id="cmpStyle" src="" alt="Style" />
+                <div class="trio-tag">Style</div>
+              </div>
+
+              <div class="trio-panel">
+                <img id="cmpResult" src="" alt="Output" />
+                <div class="trio-tag">Output</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="action-row">
+            <a
+              id="downloadBtn"
+              href="#"
+              class="btn-action primary"
+              download="neurocanvas.png"
+            >
+              ↓ Download
+            </a>
+
+            <button class="btn-action" onclick="resetAll()">
+              ↺ New Transfer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>
+        Neuro<span>Canvas</span>
+        &nbsp;·&nbsp; AdaIN Neural Style Transfer
+      </p>
+
+      <p>
+        Huang &amp; Belongie &nbsp;·&nbsp;
+        <span>ICCV 2017</span>
+      </p>
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>

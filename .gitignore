@@ -65,3 +65,9 @@ models/
 # Misc
 *.bak
 *.swp
+
+data/
+experiments/*/decoder_*.pth
+experiments/*/optimizer_*.pth
+*.pth
+__pycache__/
