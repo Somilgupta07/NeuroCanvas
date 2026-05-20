@@ -17,7 +17,7 @@ from utils.models import VGGEncoder, Decoder
 from utils.utils import adapative_instance_normalization
 
 # ── Config ────────────────────────────────────────────────────────────────────
-DECODER_PATH = 'experiments/experiment_gpu/decoder_20.pth'
+DECODER_PATH = 'experiments/experiment_gpu/decoder_11.pth'
 VGG_PATH     = 'vgg_normalised.pth'
 UPLOAD_FOLDER = 'static/uploads'
 RESULT_FOLDER = 'static/results'
